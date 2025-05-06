@@ -1,85 +1,111 @@
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
 import { InnerLayout } from '../../styles/Layouts';
 import { useGlobalContext } from '../../context/globalContext';
-import Form from '../Form/Form';
-import IncomeItem from '../IncomeItem/IncomeItem';
+import Form from '../../components/Form/Form';
+import { TrendingUp } from 'lucide-react';
+import styled from 'styled-components';
+import TransactionList from '../Transactions/TransactionList';
 
 function Income() {
-    const { addIncome, incomes, getIncomes, deleteIncome, totalIncome } = useGlobalContext();
+  const { addIncome, incomes, getIncomes, deleteIncome, totalIncome } = useGlobalContext();
 
-    useEffect(() => {
-        getIncomes();
-    }, []);
+  useEffect(() => {
+    getIncomes();
+  }, [getIncomes]);
 
-    return (
-        <IncomeStyled>
-            <InnerLayout>
-                <h1>Incomes</h1>
-                <h1 className="total-income">Total Income : <span>${totalIncome()}</span></h1>
-                <div className="income-content">
-                    <div className="form-container">
-                        <Form />
-                    </div>
-                    <div className="incomes">
-                        {incomes.map((income) => {
-                            const {_id, title, amount, date, category, description, type} = income;
-                            console.log(income)
-                            return (
-                                <div key={_id}>
-                                    <IncomeItem
-                                        key={_id}
-                                        id={_id}
-                                        title={title}
-                                        amount={amount}
-                                        date={date}
-                                        type={type}
-                                        category={category}
-                                        description={description}
-                                        indicatorColor="var(--primary-color)"
-                                        deleteItem={deleteIncome}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </InnerLayout>
-        </IncomeStyled>
-    );
+  return (
+    <IncomeStyled>
+      <InnerLayout>
+        <div className="header">
+          <div className="title">
+            <TrendingUp size={24} className="icon" />
+            <h1>Income Manager</h1>
+          </div>
+          <div className="total">
+            <span>Total Income</span>
+            <h2>${totalIncome().toFixed(2)}</h2>
+          </div>
+        </div>
+
+        <div className="content">
+          <div className="form-container">
+            <Form type="income" />
+          </div>
+          <TransactionList 
+            transactions={incomes}
+            deleteItem={deleteIncome}
+            type="income"
+          />
+        </div>
+      </InnerLayout>
+    </IncomeStyled>
+  );
 }
 
 const IncomeStyled = styled.div`
+  min-height: 100vh;
+  
+
+  .header {
     display: flex;
-    overflow: auto;
-    .total-income {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #FCF6F9;
-        border: 2px solid #FFFFFF;
-        box-shadow: 0px 1px 15px rgba(0,0,0,0.06);
-        border-radius: 20px;
-        padding: 1rem;
-        margin: 1rem 0;
-        font-size: 1.2rem;
-        gap: 0.5rem;
-        span{
-           font-size: 2.5rem;
-           font-weight: 800;
-           color: var(--color-green);
-        }
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .icon {
+        color: #34D399;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #1F2937;
+      }
     }
 
-    .income-content {
-        display: flex;
-        gap:2rem;
-        .incomes{
-            flex: 1;
-        }
-    }
-    
+    .total {
+      background: white;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
+      text-align: center;
 
+      span {
+        color: #6B7280;
+        font-size: 0.9rem;
+      }
+
+      h2 {
+        color: #34D399;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+
+  .content {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+
+    .form-container {
+      position: sticky;
+      top: 2rem;
+      height: fit-content;
+    }
+  }
 `;
 
 export default Income;

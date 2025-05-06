@@ -1,221 +1,178 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
 import { useGlobalContext } from '../../context/globalContext';
-import { plus } from '../../utils/Icons';
-import Button from '../Button/Button';
+import { Plus } from 'lucide-react';
 
-function Form() {
-    const { addIncome, getIncomes } = useGlobalContext();  // Access incomes here
-    const [inputState, setInputState] = useState({
-        title: '',
-        amount: '',
-        date: '',
-        category: '',
-        description: ''
+function Form({ type }) {
+  const { addIncome } = useGlobalContext();
+  const [inputState, setInputState] = useState({
+    title: '',
+    amount: '',
+    category: '',
+    description: '',
+    date: '',
+  });
+
+  const { title, amount, category, description, date } = inputState;
+
+  const handleInput = (name) => (e) => {
+    if (name === 'date') {
+      const selectedDate = new Date(e.target.value);
+      selectedDate.toISOString();
+      setInputState({ ...inputState, [name]: selectedDate.toISOString() });
+    } else {
+      setInputState({ ...inputState, [name]: e.target.value });
+    }
+  };
+
+  const toSafeISOStringLocal = (isoString) => {
+    if (!isoString) return null;
+  
+    
+    if (isoString.includes('T')) {
+      const dateOnly = isoString.split('T')[0]; 
+      const [year, month, day] = dateOnly.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day, 12, 0, 0); 
+      return localDate.toISOString();
+    }
+  
+    const [year, month, day] = isoString.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day, 12, 0, 0); 
+    return localDate.toISOString();
+  };
+  
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  
+    const adjustedInput = {
+        ...inputState,
+        date: toSafeISOStringLocal(inputState.date),
+      };
+  
+    addIncome(adjustedInput);
+  
+    setInputState({
+      title: '',
+      amount: '',
+      category: '',
+      description: '',
+      date: '',
     });
+  };
+  
 
-    const [error, setError] = useState('');
-    const { title, amount, date, category, description } = inputState;
-
-    const handleInput = (name) => (e) => {
-        setInputState({
-            ...inputState,
-            [name]: e.target.value
-        });
-        setError()
-    };
-
-    const resetInputState = () => {
-        setInputState({
-            title: '',
-            amount: '',
-            date: '',
-            category: '',
-            description: ''
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // Validation: Ensure all fields are filled
-        if (!title || !amount || !date || !category || !description) {
-            setError('All required fields must be filled!');
-            return;
-        }
-
-        // Validate Amount: Ensure it's a number and greater than zero
-        if (isNaN(amount) || Number(amount) <= 0) {
-            setError('Amount must be a valid number greater than zero!');
-            return;
-        }
-
-        // Validate Amount: Ensure it’s a valid number, not a string
-        if (typeof amount === 'string' && isNaN(amount.trim())) {
-            setError('Amount must be a valid number!');
-            return;
-        }
-
-        // Validate Salary Title: Ensure it doesn't contain numbers
-        if (/\d/.test(title)) {
-            setError('Salary Title cannot contain numbers!');
-            return;
-        }
-
-        // If no errors, clear previous errors
-        setError('');
-
-        try {
-            const response = await addIncome(inputState);
-
-            // If the response is successful
-            if (response && response.data && response.data.message === "income added") {
-                // Manually update incomes state with the new income
-                setInputState({
-                    title: '',
-                    amount: '',
-                    date: '',
-                    category: '',
-                    description: ''
-                });
-
-                getIncomes(); // Refresh the list of incomes
-                setError(''); // Clear error on success
-            }
-        } catch (err) {
-            setError('Error adding income. Please try again.');
-        }
-    };
-
-    return (
-        <FormStyled onSubmit={handleSubmit}>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-            <div className="input-control">
-                <input
-                    type="text"
-                    value={title}
-                    name="title"
-                    placeholder="Salary Title"
-                    onChange={handleInput('title')}
-                />
-            </div>
-            <div className="input-control">
-                <input
-                    type="text"
-                    value={amount}
-                    name="amount"
-                    id="amount"
-                    placeholder="Salary Amount"
-                    onChange={handleInput('amount')}
-                />
-            </div>
-            <div className="input-control">
-                <DatePicker
-                    id="date"
-                    placeholderText="Enter a date"
-                    selected={date}
-                    dateFormat="MM/dd/yyyy"
-                    onChange={(date) => setInputState({ ...inputState, date })}
-                />
-            </div>
-            <div className="selects input-control">
-                <select
-                    required
-                    value={category}
-                    name="category"
-                    id="category"
-                    onChange={handleInput('category')}
-                >
-                    <option value="" disabled>Select</option>
-                    <option value="salary">Salary</option>
-                    <option value="freelancing">Freelancing</option>
-                    <option value="investments">Investments</option>
-                    <option value="stocks">Stocks</option>
-                    <option value="bitcoin">Bitcoin</option>
-                    <option value="bank">Bank</option>
-                    <option value="youtube">YouTube</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div className="input-control">
-                <textarea name="description" value={description} onChange={handleInput('description')} placeholder="Add A description" id="description" cols="30"></textarea>
-            </div>
-            <div className="submit-btn">
-                <Button
-                    name={'Add Income'}
-                    icon={plus}
-                    bPad={' 8rem 1 6rem'}
-                    bRad={'30px'}
-                    bg={'var(--color-accent)'}
-                    color={'#fff'}
-                />
-            </div>
-        </FormStyled>
-    );
+  return (
+    <FormStyled onSubmit={handleSubmit}>
+      <div className="input-control">
+        <input 
+          type="text"
+          value={title}
+          name="title"
+          placeholder="Income Title"
+          onChange={handleInput('title')}
+          required
+        />
+      </div>
+      <div className="input-control">
+        <input 
+          type="number"
+          value={amount}
+          name="amount"
+          placeholder="Amount"
+          onChange={handleInput('amount')}
+          required
+        />
+      </div>
+      <div className="input-control">
+        <select 
+          value={category}
+          name="category"
+          onChange={handleInput('category')}
+          required
+        >
+          <option value="" disabled>Select Category</option>
+          <option value="salary">Salary</option>
+          <option value="freelance">Freelance</option>
+          <option value="investments">Investments</option>
+          <option value="business">Business</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div className="input-control">
+        <textarea
+          value={description}
+          name="description"
+          placeholder="Description"
+          onChange={handleInput('description')}
+          rows="4"
+        />
+      </div>
+      <div className="input-control">
+        <input 
+          type="date"
+          value={date ? new Date(date).toISOString().split('T')[0] : ''}
+          name="date"
+          onChange={handleInput('date')}
+          required
+        />
+      </div>
+      <button type="submit" className="submit-btn">
+        <Plus size={20} />
+        Add Income
+      </button>
+    </FormStyled>
+  );
 }
 
 const FormStyled = styled.form`
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
+
+  .input-control {
+    margin-bottom: 1.5rem;
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #34D399;
+      }
+    }
+
+    textarea {
+      resize: vertical;
+    }
+  }
+
+  .submit-btn {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-
-    .input-control {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        input, select, textarea {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid rgba(0, 0, 0, 0.1); /* Thin border */
-            background-color: #f9f9f9; /* Light background color */
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            color: #777; /* Light color for the text */
-            transition: all 0.3s ease-in-out;
-
-            &:focus {
-                border-color: var(--color-accent);
-                box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-            }
-        }
-
-        textarea {
-            resize: none;
-            height: 100px;
-        }
-    }
-
-    .submit-btn {
-        display: flex;
-        justify-content: center;
-        margin-top: 1rem;
-
-        button {
-            background: var(--color-accent);
-            color: #fff;
-            border: none;
-            padding: 0.8rem 2rem;
-            font-size: 1rem;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out;
-
-            &:hover {
-                background: var(--color-green);
-            }
-        }
-    }
-`;
-
-const ErrorMessage = styled.div`
-    color: red;
+    padding: 0.75rem;
+    background: #34D399;
+    border: none;
+    border-radius: 8px;
+    color: white;
     font-size: 1rem;
-    margin-bottom: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #10B981;
+    }
+  }
 `;
 
 export default Form;

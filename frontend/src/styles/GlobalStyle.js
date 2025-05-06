@@ -21,11 +21,11 @@ const shake = keyframes`
 
 export const GlobalStyle = createGlobalStyle`
     * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-    }
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    list-style: none;
+  }
 
     :root {
         --primary-color: #222260;

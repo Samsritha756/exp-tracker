@@ -1,4 +1,24 @@
 import React from 'react';
+import { 
+    Briefcase, 
+    Coffee,
+    Home,
+    Car,
+    Heart,
+    Utensils,
+    ShoppingBag,
+    Laptop,
+    Wallet,
+    DollarSign,
+    Bitcoin,
+    Building2,
+    Youtube,
+    CircleDot,
+    GraduationCap,
+    ShoppingCart,
+    Plane,
+    Shirt
+  } from 'lucide-react';
 
 export const dashboard = <i className="fa-solid fa-house"></i>;
 export const transactions = <i className="fa-solid fa-credit-card"></i>;
@@ -29,3 +49,31 @@ export const food = <i className="fa-solid fa-bowl-food"></i>;
 export const medical = <i className="fa-solid fa-briefcase-medical"></i>;
 export const tv = <i className="fa-solid fa-tv"></i>;
 export const circle = <i className="fa-solid fa-circle-dot"></i>;
+
+
+
+
+export const getCategoryIcon = (category) => {
+  const icons = {
+    // Income categories
+    salary: <Briefcase size={20} />,
+    freelancing: <Laptop size={20} />,
+    investments: <DollarSign size={20} />,
+    stocks: <Building2 size={20} />,
+    bitcoin: <Bitcoin size={20} />,
+    bank: <Wallet size={20} />,
+    youtube: <Youtube size={20} />,
+    
+    // Expense categories
+    education: <GraduationCap size={20} />,
+    groceries: <ShoppingCart size={20} />,
+    health: <Heart size={20} />,
+    subscriptions: <CircleDot size={20} />,
+    takeaways: <Utensils size={20} />,
+    clothing: <Shirt size={20} />,
+    travelling: <Plane size={20} />,
+    other: <Coffee size={20} />,
+  };
+
+  return icons[category?.toLowerCase()] || <Coffee size={20} />;
+};

@@ -3,6 +3,7 @@ import { MainLayout } from './styles/Layouts';
 import Orb from './components/Orb/Orb';
 import Navigation from './components/Navigation/Navigation';
 import Dashboard from './components/Dashboard/Dashboard';
+import Transactions from './components/Transaction/Transaction';
 import Income from './components/Income/Income';
 import { useState } from 'react';
 import Expenses from './components/Expenses/Expenses';
@@ -17,9 +18,9 @@ function App() {
     const displayData = () => {
         switch (active) {
             case 1:
-                return <Dashboard />;
+                return <Dashboard setActive={setActive}/>;
             case 2:
-                return <Dashboard />;
+                return <Transactions />;
             case 3:
                 return <Income />;
             case 4:

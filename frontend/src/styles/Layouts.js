@@ -1,15 +1,14 @@
 import styled from "styled-components";
 
 export const MainLayout = styled.div`
-    padding: 2rem;
-    height: 100vh;
-    display: flex;
-    gap: 2rem;
-    
+  padding: 2rem;
+  height: 100%;
+  display: flex;
+  gap: 2rem;
 `;
 
 export const InnerLayout = styled.div`
-    padding: 2rem 1.5rem;
-    width: 100%;
-    overflow:hidden;
+  width: 100%;
+  padding: 2rem;
+  border-radius: 20px;
 `;

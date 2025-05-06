@@ -1,160 +1,143 @@
-import React, { useEffect } from 'react';
-import styled from 'styled-components';
-import { InnerLayout } from '../../styles/Layouts';
-import Chart from '../Chart/ChartPage'
+import React, { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../context/globalContext';
-import { dollar } from '../../utils/Icons';
-import History from '../../History/History';
+import { InnerLayout } from '../../styles/Layouts';
+import { 
+  DashboardStyled, 
+  TimeFilterContainer,
+  DateRangeContainer 
+} from './DashboardStyles';
+import FinancialSummary from './FinancialSummary';
+import FinancialOverview from './FinancialOverview';
+import TransactionHistory from './TransactionHistory';
+import { PanelLeft, BarChart4, PieChart, Calendar, CalendarRange, X } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
-function Dashboard() {
-    const {totalExpenses, totalIncome, totalBalance, getIncomes,getExpenses, incomes, expenses} = useGlobalContext()
+function Dashboard({setActive}) {
+  const { getIncomes, getExpenses } = useGlobalContext();
+  const [activeTimeFilter, setActiveTimeFilter] = useState('monthly');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [isCustomRange, setIsCustomRange] = useState(false);
 
+  useEffect(() => {
+    getIncomes();
+    getExpenses();
+  }, [getIncomes, getExpenses]);
 
-    useEffect(() => {
-        getIncomes()
-        getExpenses()
-    }, [])
-    return (
-        <DashboardStyled>
-            <InnerLayout>
-                <h1>All Transactions</h1>
-                <div className="stats-con">
-                    <div className="chart-con">
-                        <Chart />  
-                        <div className="amount-con">
-                            <div className="income">
-                                <h2> Total Income</h2>
-                                <p>
-                                    {dollar} {totalIncome()}
-                                </p>
-                            </div>
-                            <div className="expense">
-                                <h2> Total Expense</h2>
-                                <p>
-                                    {dollar} {totalExpenses()}
-                                </p>
-                            </div>
-                            <div className="balance">
-                                <h2> Total Balance</h2>
-                                <p>
-                                {dollar} {totalBalance()}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="history-con">
-                        <History/>
-                        <h2 className="salary-title">  Min <span>incomes</span> Max </h2>
-                        <div className="salary-item">
-                            <p>
-                              {Math.min(...incomes.map(item => item.amount))}
-                            </p>
-                            <p>
-                              {Math.max(...incomes.map(item => item.amount))}
-                            </p>
-                        </div>
-                        <h2 className="salary-title">  Min <span> Expense</span> Max </h2>
-                        <div className="salary-item">
-                            <p>
-                              {Math.min(...expenses.map(item => item.amount))}
-                            </p>
-                            <p>
-                              {Math.max(...expenses.map(item => item.amount))}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </InnerLayout>
-        </DashboardStyled>
-    );
+  const handleDateRangeSelect = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+    if (start && end) {
+      setIsCustomRange(true);
+      setActiveTimeFilter('custom');
+    }
+  };
+
+  const handleTimeFilterClick = (filter) => {
+    setActiveTimeFilter(filter);
+    setIsCustomRange(false);
+    setStartDate(null);
+    setEndDate(null);
+  };
+
+  const clearDateRange = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setIsCustomRange(false);
+    setActiveTimeFilter('monthly');
+  };
+
+  return (
+    <DashboardStyled>
+      <InnerLayout>
+        <div className="dashboard-header">
+          <div className="title-container">
+            <PanelLeft size={24} />
+            <h1>Financial Dashboard</h1>
+          </div>
+          
+          <div className="filters-container">
+            <TimeFilterContainer>
+              <button 
+                className={activeTimeFilter === 'weekly' ? 'active' : ''} 
+                onClick={() => handleTimeFilterClick('weekly')}
+              >
+                <Calendar size={16} />
+                Weekly
+              </button>
+              <button 
+                className={activeTimeFilter === 'monthly' ? 'active' : ''} 
+                onClick={() => handleTimeFilterClick('monthly')}
+              >
+                <BarChart4 size={16} />
+                Monthly
+              </button>
+              <button 
+                className={activeTimeFilter === 'yearly' ? 'active' : ''} 
+                onClick={() => handleTimeFilterClick('yearly')}
+              >
+                <PieChart size={16} />
+                Yearly
+              </button>
+              <button 
+                className={isCustomRange ? 'active' : ''} 
+                onClick={() => setIsCustomRange(!isCustomRange)}
+              >
+                <CalendarRange size={16} />
+                Custom
+              </button>
+              {isCustomRange && (
+                <button 
+                  className="clear-date" 
+                  onClick={clearDateRange}
+                >
+                  <X size={16} />
+                  Clear
+                </button>
+              )}
+            </TimeFilterContainer>
+
+            {isCustomRange && (
+              <DateRangeContainer>
+                <DatePicker
+                  selected={startDate}
+                  onChange={handleDateRangeSelect}
+                  startDate={startDate}
+                  endDate={endDate}
+                  selectsRange
+                  inline
+                  className="date-picker"
+                />
+              </DateRangeContainer>
+            )}
+          </div>
+        </div>
+
+        <div className="dashboard-content">
+          <FinancialSummary 
+            timeFilter={activeTimeFilter} 
+            startDate={startDate} 
+            endDate={endDate}
+          />
+          <div className="main-content">
+            <FinancialOverview 
+              timeFilter={activeTimeFilter}
+              startDate={startDate}
+              endDate={endDate}
+            />
+            <TransactionHistory 
+              timeFilter={activeTimeFilter}
+              startDate={startDate}
+              endDate={endDate}
+              setActive={setActive}
+            />
+          </div>
+        </div>
+      </InnerLayout>
+    </DashboardStyled>
+  );
 }
-
-const DashboardStyled = styled.div`
-      min-height: 100vh;
-      overflow-y: auto;
-
-    
-    .stats-con{
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 2rem; 
-    .chart-con{
-       grid-column: 1 / 4;
-       height: 400px;
-       .amount-con{
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 2rem;
-        margin-top: 2rem;
-        .income, .expense{
-          grid-column: span 2;
-          padding: 1rem;
-
-        }
-        .income, .expense, .balance{
-          background: #FCF6F9;
-          border: 2px solid #FFFFFF;
-          box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
-          border-radius: 20px;
-          padding: 1rem;
-          p{
-            font-size: 3.5rem;
-            font-weight: 700;
-          }
-        }
-        .balance{
-          grid-column: 1 / 5;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          p{
-            color: var(--color-green);
-            opacity: 0.6;
-            font-size: 4.5rem;
-          }
-
-
-        }
-        }
-    }
-        
-    
-
-    .history-con{
-        grid-column: 4 / -1;
-        min-height: 115vh;
-
-        h2{
-          margin: 1rem 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .salary-title{
-         font-size: 1.2rem;
-         span{
-          font-size: 1.8rem;
-         }
-        }
-        .salary-item{
-          background: #FCF6F9;
-          border: 2px solid #FFFFFF;
-          box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
-          padding: 1rem;
-          display: flex;
-          justify-content: space-between;
-          border-radius: 20px;
-          align-items: center;
-          p{
-           font-weight: 600;
-           font-size: 1.6rem;
-          }
-        }
-    }
-    }
-    
-    
-`;
 
 export default Dashboard;
